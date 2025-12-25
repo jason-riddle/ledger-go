@@ -33,7 +33,7 @@ func TestFormatPostingLine(t *testing.T) {
 	}
 
 	got := FormatPostingLine(posting, 10, 7)
-	want := "  Assets      -12.34 USD"
+	want := "  Assets       -12.34 USD"
 	if got != want {
 		t.Fatalf("FormatPostingLine() = %q, want %q", got, want)
 	}
