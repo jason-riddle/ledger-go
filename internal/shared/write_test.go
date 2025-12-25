@@ -50,7 +50,10 @@ func TestWriteBeanFiles(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to read bean file: %v", err)
 	}
-	expected := "2024-01-01 * \"Test Payee\"\n  Assets:Checking  100.00 USD\n  Expenses:Other  -100.00 USD\n\n"
+	accountWidth, amountWidth := ComputePostingWidths(txs)
+	expected := "2024-01-01 * \"Test Payee\"\n" +
+		formatPostingLine(txs[0].Postings[0], accountWidth, amountWidth) + "\n" +
+		formatPostingLine(txs[0].Postings[1], accountWidth, amountWidth) + "\n\n"
 	if string(content) != expected {
 		t.Errorf("Bean file content mismatch: got %q, want %q", string(content), expected)
 	}

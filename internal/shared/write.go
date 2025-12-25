@@ -26,6 +26,7 @@ func WriteBeanFiles(outputDir, pdfPath string, txs []*parser.Transaction) error 
 	}
 	defer file.Close()
 
+	accountWidth, amountWidth := ComputePostingWidths(txs)
 	for _, tx := range txs {
 		fmt.Fprintf(file, "%s * \"%s\"", tx.Date, tx.Payee)
 		if tx.Narration != "" {
@@ -45,7 +46,7 @@ func WriteBeanFiles(outputDir, pdfPath string, txs []*parser.Transaction) error 
 			fmt.Fprintf(file, "  %s: \"%s\"\n", key, tx.Links[key])
 		}
 		for _, p := range tx.Postings {
-			fmt.Fprintf(file, "  %s  %s %s\n", p.Account, p.Amount.Value, p.Amount.Currency)
+			fmt.Fprintln(file, formatPostingLine(p, accountWidth, amountWidth))
 		}
 		fmt.Fprintln(file)
 	}

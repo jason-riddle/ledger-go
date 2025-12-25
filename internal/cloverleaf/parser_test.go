@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/jason-riddle/ledger-go/internal/cloverleaf"
+	"github.com/jason-riddle/ledger-go/internal/shared"
 )
 
 func TestGoldenFiles(t *testing.T) {
@@ -28,6 +29,7 @@ func TestGoldenFiles(t *testing.T) {
 
 	// Format to .bean
 	var lines []string
+	accountWidth, amountWidth := shared.ComputePostingWidths(txs)
 	for _, tx := range txs {
 		line := fmt.Sprintf("%s * \"%s\"", tx.Date, tx.Payee)
 		if tx.Narration != "" {
@@ -46,8 +48,7 @@ func TestGoldenFiles(t *testing.T) {
 			lines = append(lines, "  work_order_url: \"Not a work order\"")
 		}
 		for _, p := range tx.Postings {
-			line := fmt.Sprintf("  %s  %s %s", p.Account, p.Amount.Value, p.Amount.Currency)
-			lines = append(lines, line)
+			lines = append(lines, shared.FormatPostingLine(p, accountWidth, amountWidth))
 		}
 		lines = append(lines, "")
 	}
