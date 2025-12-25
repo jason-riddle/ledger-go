@@ -13,8 +13,8 @@
   Assets:Escrow:Taxes---Insurance:2943-Butterfly-Palm                       381.40 USD
 
 2023-11-02 * "SPS Mortgage Servicing" "Memo: Special Deposit" #beangulp #imported #mortgage
-  Assets:Escrow:Taxes---Insurance:2943-Butterfly-Palm                      1447.00 USD
   Assets:Cash---Bank:Checking                                             -1447.00 USD
+  Assets:Escrow:Taxes---Insurance:2943-Butterfly-Palm                      1447.00 USD
 
 2023-11-14 balance Assets:Escrow:Taxes---Insurance:2943-Butterfly-Palm     4636.72 USD
 2023-11-14 balance Liabilities:Mortgages:2943-Butterfly-Palm            -101744.46 USD
