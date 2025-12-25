@@ -1,7 +1,0 @@
-;; -*- mode: beancount -*-
-
-;; Import confirmation for cloverleaf-test
-;; Source: cloverleaf
-
-include "./cloverleaf-test.bean"
-include "./cloverleaf-test.balances.bean"
