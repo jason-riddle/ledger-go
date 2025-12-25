@@ -6,6 +6,7 @@
 - **Test single**: `go test -run TestName ./package/path`
 - **Format**: `go fmt ./...`
 - **Lint**: `go vet ./...`
+- **Note**: If `go test` fails with permissions in `/home/jason/.cache/go-build`, use `GOCACHE=/home/jason/go/.cache/go-build`.
 
 ## Code Style Guidelines
 
@@ -16,7 +17,7 @@
 
 ### Formatting
 - Use `go fmt` for consistent formatting
-- 4-space indentation for Go code
+- Go uses tabs for indentation (gofmt standard)
 - Line length: reasonable, break long lines
 
 ### Naming
