@@ -22,18 +22,73 @@ func (p *cloverLeafParser) Parse(text string) ([]*parser.Transaction, error) {
 	slog.Debug("Starting CloverLeaf parsing", "text_length", len(text))
 	var txs []*parser.Transaction
 
+	periodRe := regexp.MustCompile(`Statement Period\s+(\d{2}-\d{2}-\d{4})\s+to\s+(\d{2}-\d{2}-\d{4})`)
+	periodLineRe := regexp.MustCompile(`(\d{2}-\d{2}-\d{4})\s+to\s+(\d{2}-\d{2}-\d{4})`)
+	beginBalanceRe := regexp.MustCompile(`Beginning Balance\s+(\d{2}-\d{2}-\d{4}).*?\$?\s*([\(]?\d[\d,]*\.\d{2}[)]?)`)
+	endBalanceRe := regexp.MustCompile(`Ending Balance.*?\$?\s*([\(]?\d[\d,]*\.\d{2}[)]?)`)
+
 	// Regex for transaction lines: desc date increase decrease
 	re := regexp.MustCompile(`(.+?)\s+(\d{2}-\d{2}-\d{4})\s+[\$]?([\d,]+\.\d{2}|0\.00)\s+[\$]?([\d,]+\.\d{2}|0\.00)`)
 	lines := strings.Split(text, "\n")
 	var currentProperty string
 	var matches int
+	var statementEndDate string
+	inDetails := false
+	addedEndingBalance := false
 	for _, line := range lines {
+		if statementEndDate == "" {
+			if periodMatch := periodRe.FindStringSubmatch(line); periodMatch != nil {
+				statementEndDate = formatDateDash(periodMatch[2])
+			} else if periodLineMatch := periodLineRe.FindStringSubmatch(line); periodLineMatch != nil {
+				statementEndDate = formatDateDash(periodLineMatch[2])
+			}
+		}
+		if strings.Contains(line, "TRANSACTION DETAILS") {
+			inDetails = true
+			continue
+		}
+		if strings.Contains(line, "OPEN WORK ORDERS") {
+			inDetails = false
+		}
+		if inDetails {
+			if beginMatch := beginBalanceRe.FindStringSubmatch(line); beginMatch != nil {
+				dateStr := formatDateDash(beginMatch[1])
+				amountStr, _ := normalizeAmount(beginMatch[2])
+				txs = append(txs, &parser.Transaction{
+					Date:           dateStr,
+					Directive:      "balance",
+					BalanceAccount: "Assets:Property-Management:CloverLeaf-PM",
+					BalanceAmount:  parser.Amount{Value: amountStr, Currency: "USD"},
+				})
+				continue
+			}
+			if !addedEndingBalance {
+				if endMatch := endBalanceRe.FindStringSubmatch(line); endMatch != nil {
+					amountStr, _ := normalizeAmount(endMatch[1])
+					dateStr := statementEndDate
+					if dateStr == "" {
+						dateStr = ""
+					}
+					txs = append(txs, &parser.Transaction{
+						Date:           dateStr,
+						Directive:      "balance",
+						BalanceAccount: "Assets:Property-Management:CloverLeaf-PM",
+						BalanceAmount:  parser.Amount{Value: amountStr, Currency: "USD"},
+					})
+					addedEndingBalance = true
+					continue
+				}
+			}
+		}
 		if strings.Contains(line, "2943 Butterfly Palm") {
 			currentProperty = "2943-Butterfly-Palm"
 		} else if strings.Contains(line, "206 Hoover Ave") || strings.Contains(line, "206 Hoover Avenue") {
 			currentProperty = "206-Hoover-Ave"
 		}
 
+		if !inDetails {
+			continue
+		}
 		match := re.FindStringSubmatch(line)
 		if len(match) == 0 {
 			continue
@@ -41,20 +96,14 @@ func (p *cloverLeafParser) Parse(text string) ([]*parser.Transaction, error) {
 		matches++
 		desc := strings.TrimSpace(match[1])
 		dateStr := match[2]
-		increaseStr := strings.ReplaceAll(match[3], ",", "")
-		decreaseStr := strings.ReplaceAll(match[4], ",", "")
+		increaseStr, _ := normalizeAmount(match[3])
+		decreaseStr, _ := normalizeAmount(match[4])
 
 		// Convert MM-DD-YYYY to YYYY-MM-DD
-		parts := strings.Split(dateStr, "-")
-		if len(parts) == 3 {
-			dateStr = fmt.Sprintf("%s-%s-%s", parts[2], parts[0], parts[1])
-		}
+		dateStr = formatDateDash(dateStr)
 
 		// Skip if both amounts are 0 or if desc contains certain words
 		if increaseStr == "0.00" && decreaseStr == "0.00" {
-			continue
-		}
-		if strings.Contains(desc, "Tenant") || strings.Contains(desc, "Layla") {
 			continue
 		}
 
@@ -193,4 +242,26 @@ func (p *cloverLeafParser) mapLinks() map[string]string {
 	return map[string]string{
 		"comments": "",
 	}
+}
+
+func normalizeAmount(amount string) (string, bool) {
+	trimmed := strings.TrimSpace(amount)
+	trimmed = strings.TrimPrefix(trimmed, "$")
+	isNegative := strings.HasPrefix(trimmed, "(") && strings.HasSuffix(trimmed, ")")
+	trimmed = strings.TrimPrefix(trimmed, "(")
+	trimmed = strings.TrimSuffix(trimmed, ")")
+	trimmed = strings.ReplaceAll(trimmed, ",", "")
+	trimmed = strings.ReplaceAll(trimmed, " ", "")
+	if isNegative {
+		return fmt.Sprintf("-%s", trimmed), true
+	}
+	return trimmed, false
+}
+
+func formatDateDash(dateStr string) string {
+	parts := strings.Split(strings.TrimSpace(dateStr), "-")
+	if len(parts) != 3 {
+		return strings.TrimSpace(dateStr)
+	}
+	return fmt.Sprintf("%s-%s-%s", parts[2], parts[0], parts[1])
 }

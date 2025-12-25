@@ -4,11 +4,15 @@ package parser
 // Transaction represents a Beancount transaction.
 type Transaction struct {
 	Date      string
-	Payee     string
-	Narration string
-	Tags      []string
-	Links     map[string]string
-	Postings  []Posting
+	Directive string
+	// BalanceAccount and BalanceAmount are used when Directive == "balance".
+	BalanceAccount string
+	BalanceAmount  Amount
+	Payee          string
+	Narration      string
+	Tags           []string
+	Links          map[string]string
+	Postings       []Posting
 }
 
 // Posting represents a transaction posting.

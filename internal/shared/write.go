@@ -28,6 +28,11 @@ func WriteBeanFiles(outputDir, pdfPath string, txs []*parser.Transaction) error 
 
 	accountWidth, amountWidth := ComputePostingWidths(txs)
 	for _, tx := range txs {
+		if tx.Directive == "balance" {
+			fmt.Fprintln(file, FormatBalanceLine(tx, accountWidth, amountWidth))
+			fmt.Fprintln(file)
+			continue
+		}
 		fmt.Fprintf(file, "%s * \"%s\"", tx.Date, tx.Payee)
 		if tx.Narration != "" {
 			fmt.Fprintf(file, " \"%s\"", tx.Narration)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
 
@@ -31,6 +32,11 @@ func TestGoldenFiles(t *testing.T) {
 	var lines []string
 	accountWidth, amountWidth := shared.ComputePostingWidths(txs)
 	for _, tx := range txs {
+		if tx.Directive == "balance" {
+			lines = append(lines, shared.FormatBalanceLine(tx, accountWidth, amountWidth))
+			lines = append(lines, "")
+			continue
+		}
 		line := fmt.Sprintf("%s * \"%s\"", tx.Date, tx.Payee)
 		if tx.Narration != "" {
 			line += fmt.Sprintf(" \"%s\"", tx.Narration)
@@ -39,13 +45,14 @@ func TestGoldenFiles(t *testing.T) {
 			line += " " + strings.Join(tx.Tags, " ")
 		}
 		lines = append(lines, line)
-		// Links in golden order
-		if len(tx.Links) > 0 {
-			lines = append(lines, "  paperless_bill_invoice_receipt_url: \"No doc\"")
-			lines = append(lines, "  property_manager_bill_url: \"No bill\"")
-			lines = append(lines, "  additional_url: \"No additional url\"")
-			lines = append(lines, "  comments: \"No comments\"")
-			lines = append(lines, "  work_order_url: \"Not a work order\"")
+		// Sort link keys for consistent output
+		var keys []string
+		for key := range tx.Links {
+			keys = append(keys, key)
+		}
+		sort.Strings(keys)
+		for _, key := range keys {
+			lines = append(lines, fmt.Sprintf("  %s: \"%s\"", key, tx.Links[key]))
 		}
 		for _, p := range tx.Postings {
 			lines = append(lines, shared.FormatPostingLine(p, accountWidth, amountWidth))
@@ -55,7 +62,7 @@ func TestGoldenFiles(t *testing.T) {
 	output := strings.Join(lines, "\n")
 
 	// Load golden
-	goldenPath := filepath.Join("..", "..", "tests", "golden", "cloverleaf_2025-12-11_statement.bean")
+	goldenPath := filepath.Join("..", "..", "tests", "golden", "cloverleaf", "cloverleaf_2025-12-11_statement.bean")
 	golden, err := os.ReadFile(goldenPath)
 	if err != nil {
 		t.Fatal(err)

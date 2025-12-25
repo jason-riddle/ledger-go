@@ -32,6 +32,11 @@ func TestGoldenFiles(t *testing.T) {
 	var lines []string
 	accountWidth, amountWidth := shared.ComputePostingWidths(txs)
 	for _, tx := range txs {
+		if tx.Directive == "balance" {
+			lines = append(lines, shared.FormatBalanceLine(tx, accountWidth, amountWidth))
+			lines = append(lines, "")
+			continue
+		}
 		line := fmt.Sprintf("%s * \"%s\"", tx.Date, tx.Payee)
 		if tx.Narration != "" {
 			line += fmt.Sprintf(" \"%s\"", tx.Narration)
