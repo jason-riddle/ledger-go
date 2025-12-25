@@ -1,0 +1,13 @@
+2023-10-16 * "SPS Mortgage Servicing" "Memo: Insurance Payment - Total: $702.88" #beangulp #imported #mortgage
+  Assets:Escrow:Taxes---Insurance:2943-Butterfly-Palm   -702.88 USD
+  Expenses:Insurance:2943-Butterfly-Palm                 702.88 USD
+
+2023-11-01 * "SPS Mortgage Servicing" "Memo: Mortgage Payment - Principal: $65.47, Interest: $731.76, Escrow: $381.40" #beangulp #imported #mortgage
+  Assets:Cash---Bank:Checking                          -1178.63 USD
+  Liabilities:Mortgages:2943-Butterfly-Palm               65.47 USD
+  Expenses:Mortgage-Interest:2943-Butterfly-Palm         731.76 USD
+  Assets:Escrow:Taxes---Insurance:2943-Butterfly-Palm    381.40 USD
+
+2023-11-12 * "SPS Mortgage Servicing" "Memo: Owner Contribution - asd" #beangulp #imported #mortgage
+  Assets:Escrow:Taxes---Insurance:2943-Butterfly-Palm   1447.00 USD
+  Assets:Cash---Bank:Checking                          -1447.00 USD
