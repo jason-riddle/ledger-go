@@ -33,3 +33,7 @@ vendor/
 # OS specific files
 .DS_Store
 Thumbs.db
+
+.devenv
+.devenv.flake.nix
+.pre-commit-config.yaml
