@@ -55,7 +55,7 @@ func TestGoldenFiles(t *testing.T) {
 	output := strings.Join(lines, "\n")
 
 	// Load golden
-	goldenPath := filepath.Join("..", "..", "tests", "golden", "sheervalue_2025-01_statement_multi_property.bean")
+	goldenPath := filepath.Join("..", "..", "tests", "golden", "sheervalue", "sheervalue_2025_multi_property_statement.bean")
 	golden, err := os.ReadFile(goldenPath)
 	if err != nil {
 		t.Fatal(err)

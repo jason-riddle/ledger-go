@@ -22,19 +22,23 @@ func (p *cloverLeafParser) Parse(text string) ([]*parser.Transaction, error) {
 	slog.Debug("Starting CloverLeaf parsing", "text_length", len(text))
 	var txs []*parser.Transaction
 
-	// Add opening balance transaction
-	openingTx := p.createOpeningBalance(text)
-	if openingTx != nil {
-		txs = append(txs, openingTx)
-		slog.Debug("Added opening balance transaction")
-	}
-
 	// Regex for transaction lines: desc date increase decrease
 	re := regexp.MustCompile(`(.+?)\s+(\d{2}-\d{2}-\d{4})\s+[\$]?([\d,]+\.\d{2}|0\.00)\s+[\$]?([\d,]+\.\d{2}|0\.00)`)
-	matches := re.FindAllStringSubmatch(text, -1)
-	slog.Debug("Found potential transaction lines", "count", len(matches))
+	lines := strings.Split(text, "\n")
+	var currentProperty string
+	var matches int
+	for _, line := range lines {
+		if strings.Contains(line, "2943 Butterfly Palm") {
+			currentProperty = "2943-Butterfly-Palm"
+		} else if strings.Contains(line, "206 Hoover Ave") || strings.Contains(line, "206 Hoover Avenue") {
+			currentProperty = "206-Hoover-Ave"
+		}
 
-	for _, match := range matches {
+		match := re.FindStringSubmatch(line)
+		if len(match) == 0 {
+			continue
+		}
+		matches++
 		desc := strings.TrimSpace(match[1])
 		dateStr := match[2]
 		increaseStr := strings.ReplaceAll(match[3], ",", "")
@@ -56,7 +60,7 @@ func (p *cloverLeafParser) Parse(text string) ([]*parser.Transaction, error) {
 
 		// Determine payee and accounts based on desc (simplified)
 		payee := p.mapPayee(desc)
-		account := p.mapAccount(desc)
+		account := p.mapAccount(desc, currentProperty)
 
 		var postings []parser.Posting
 		if increaseStr != "0.00" {
@@ -84,31 +88,9 @@ func (p *cloverLeafParser) Parse(text string) ([]*parser.Transaction, error) {
 		txs = append(txs, tx)
 	}
 
+	slog.Debug("Found potential transaction lines", "count", matches)
 	slog.Info("Completed CloverLeaf parsing", "transactions", len(txs))
 	return txs, nil
-}
-
-// createOpeningBalance creates the opening balance transaction
-func (p *cloverLeafParser) createOpeningBalance(text string) *parser.Transaction {
-	// Parse beginning balance
-	re := regexp.MustCompile(`Beginning Balance\s*\$?([\d,]+\.\d{2})`)
-	match := re.FindStringSubmatch(text)
-	if len(match) < 2 {
-		return nil
-	}
-	balance := strings.ReplaceAll(match[1], ",", "")
-
-	return &parser.Transaction{
-		Date:      "2025-11-01",
-		Payee:     "Opening balance",
-		Narration: "Opening balance for property management account",
-		Tags:      []string{"#beangulp", "#imported"},
-		Links:     nil, // Opening balance has no links in golden
-		Postings: []parser.Posting{
-			{Account: "Assets:Property-Management:CloverLeaf-PM", Amount: parser.Amount{Value: balance, Currency: "USD"}},
-			{Account: "Equity:Opening-Balances", Amount: parser.Amount{Value: fmt.Sprintf("-%s", balance), Currency: "USD"}},
-		},
-	}
 }
 
 // mapPayee maps description to payee name
@@ -119,7 +101,7 @@ func (p *cloverLeafParser) mapPayee(desc string) string {
 	case strings.Contains(desc, "Management Fee"):
 		return "CloverLeaf Property Management"
 	case strings.Contains(desc, "Owner Distribution"):
-		return "John Doe"
+		return "Jason Riddle"
 	case strings.Contains(desc, "Utilities"):
 		return "CloverLeaf Property Management"
 	case strings.Contains(desc, "Lock Change"):
@@ -134,24 +116,45 @@ func (p *cloverLeafParser) mapPayee(desc string) string {
 }
 
 // mapAccount maps description to account
-func (p *cloverLeafParser) mapAccount(desc string) string {
+func (p *cloverLeafParser) mapAccount(desc, property string) string {
 	switch {
 	case strings.Contains(desc, "Rent"):
-		return "Income:Rent:2943-Butterfly-Palm"
+		if property == "" {
+			property = "2943-Butterfly-Palm"
+		}
+		return fmt.Sprintf("Income:Rent:%s", property)
 	case strings.Contains(desc, "Management Fee"):
-		return "Expenses:Management-Fees:2943-Butterfly-Palm"
+		if property == "" {
+			property = "2943-Butterfly-Palm"
+		}
+		return fmt.Sprintf("Expenses:Management-Fees:%s", property)
 	case strings.Contains(desc, "Owner Distribution"):
 		return "Equity:Owner-Distributions:Owner-Draw"
 	case strings.Contains(desc, "Utilities") && strings.Contains(desc, "Electric"):
-		return "Expenses:Utilities:Electric:206-Hoover-Ave"
+		if property == "" {
+			property = "206-Hoover-Ave"
+		}
+		return fmt.Sprintf("Expenses:Utilities:Electric:%s", property)
 	case strings.Contains(desc, "Utilities") && strings.Contains(desc, "Water"):
-		return "Expenses:Utilities:Water:206-Hoover-Ave"
+		if property == "" {
+			property = "206-Hoover-Ave"
+		}
+		return fmt.Sprintf("Expenses:Utilities:Water:%s", property)
 	case strings.Contains(desc, "Lock Change"):
-		return "Expenses:Repairs:2943-Butterfly-Palm"
+		if property == "" {
+			property = "2943-Butterfly-Palm"
+		}
+		return fmt.Sprintf("Expenses:Repairs:%s", property)
 	case strings.Contains(desc, "General Repairs"):
-		return "Expenses:Repairs:2943-Butterfly-Palm"
+		if property == "" {
+			property = "2943-Butterfly-Palm"
+		}
+		return fmt.Sprintf("Expenses:Repairs:%s", property)
 	case strings.Contains(desc, "EGM Maintenance"):
-		return "Expenses:Repairs:2943-Butterfly-Palm"
+		if property == "" {
+			property = "2943-Butterfly-Palm"
+		}
+		return fmt.Sprintf("Expenses:Repairs:%s", property)
 	default:
 		return "Expenses:Other"
 	}
@@ -188,10 +191,6 @@ func (p *cloverLeafParser) mapNarration(desc string) string {
 // mapLinks returns the standard links
 func (p *cloverLeafParser) mapLinks() map[string]string {
 	return map[string]string{
-		"paperless_bill_invoice_receipt_url": "No doc",
-		"property_manager_bill_url":          "No bill",
-		"additional_url":                     "No additional url",
-		"comments":                           "No comments",
-		"work_order_url":                     "Not a work order",
+		"comments": "",
 	}
 }
