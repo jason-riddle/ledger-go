@@ -106,6 +106,7 @@ func (p *sheerValueParser) Parse(text string) ([]*parser.Transaction, error) {
 				{Account: "Assets:Property-Management:SheerValue-PM", Amount: parser.Amount{Value: signedAmount(amountAbs, -sign), Currency: "USD"}},
 			}
 		}
+		parser.OrderPostingsBySign(postings)
 
 		tx := &parser.Transaction{
 			Date:      formatDateSlash(dateStr),

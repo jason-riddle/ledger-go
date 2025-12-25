@@ -28,6 +28,6 @@ func ExampleNewParser() {
 
 	// Output:
 	// 2024-01-15 * "SPS Mortgage" "Mortgage Payment" beangulp imported
-	//   Expenses:Mortgage-Interest:SPS  500.00 USD
 	//   Liabilities:Mortgages:SPS  -500.00 USD
+	//   Expenses:Mortgage-Interest:SPS  500.00 USD
 }

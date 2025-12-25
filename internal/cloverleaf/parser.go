@@ -125,6 +125,7 @@ func (p *cloverLeafParser) Parse(text string) ([]*parser.Transaction, error) {
 				{Account: account, Amount: parser.Amount{Value: decreaseStr, Currency: "USD"}},
 			}
 		}
+		parser.OrderPostingsBySign(postings)
 
 		tx := &parser.Transaction{
 			Date:      dateStr,

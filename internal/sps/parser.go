@@ -50,6 +50,7 @@ func (p *spsParser) Parse(text string) ([]*parser.Transaction, error) {
 				{Account: account, Amount: parser.Amount{Value: amountStr, Currency: "USD"}},
 			}
 		}
+		parser.OrderPostingsBySign(postings)
 
 		tx := &parser.Transaction{
 			Date:      dateStr,
