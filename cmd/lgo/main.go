@@ -1,4 +1,4 @@
-// cmd/stmtimport/main.go
+// cmd/lgo/main.go
 package main
 
 import (
