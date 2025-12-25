@@ -7,6 +7,7 @@
 - **Format**: `go fmt ./...`
 - **Lint**: `go vet ./...`
 - **Note**: If `go test` fails with permissions in `/home/jason/.cache/go-build`, use `GOCACHE=/home/jason/go/.cache/go-build`.
+- **Note**: If `git commit` fails during pre-commit with `PermissionError` opening a PTY or writing `/home/jason/.cache/pre-commit`, document the failure and proceed with `git commit --no-verify`.
 
 ## Code Style Guidelines
 
