@@ -1,8 +1,4 @@
-2025-11-01 * "Opening balance" "Opening balance for property management account" #beangulp #imported
-  Assets:Property-Management:CloverLeaf-PM        714.29 USD
-  Equity:Opening-Balances                        -714.29 USD
-
-2025-11-06 * "John Doe" "Memo: Owner Distribution" #beangulp #imported
+2025-11-06 * "Jason Riddle" "Memo: Owner Distribution" #beangulp #imported
   Assets:Property-Management:CloverLeaf-PM      -1053.10 USD
   Equity:Owner-Distributions:Owner-Draw          1053.10 USD
 
