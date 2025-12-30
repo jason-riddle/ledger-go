@@ -185,19 +185,19 @@
 
     # GOLANG
     # Standard Go formatting
-    # gofmt = {
-    #   enable = true;
-    # };
+    gofmt = {
+      enable = true;
+    };
 
     # Go testing (requires serial execution)
-    # gotest = {
-    #   enable = true;
-    # };
+    gotest = {
+      enable = true;
+    };
 
     # Go static analysis (requires serial execution)
-    # govet = {
-    #   enable = true;
-    # };
+    govet = {
+      enable = true;
+    };
 
     # Advanced static analysis for Go
     staticcheck = {
