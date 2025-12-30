@@ -88,7 +88,7 @@ func (p *sheerValueParser) Parse(text string) ([]*parser.Transaction, error) {
 		}
 
 		narration := fmt.Sprintf("Memo: %s - %s", property, accountType)
-		tags := []string{"#beangulp", "#imported"}
+		tags := []string{"#imported"}
 		if reversed {
 			narration += " - REVERSED"
 			tags = append(tags, "#reversed")

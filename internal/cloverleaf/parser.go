@@ -131,7 +131,7 @@ func (p *cloverLeafParser) Parse(text string) ([]*parser.Transaction, error) {
 			Date:      dateStr,
 			Payee:     payee,
 			Narration: p.mapNarration(desc),
-			Tags:      []string{"#beangulp", "#imported"},
+			Tags:      []string{"#imported"},
 			Links:     p.mapLinks(),
 			Postings:  postings,
 		}
